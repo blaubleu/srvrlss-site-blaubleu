@@ -15,113 +15,113 @@ provider:
   endpointType: regional
   environment:
     USERS_TBL: ${self:service}-${opt:stage, self:provider.stage}
-    SONGS_TBL: ${self:service}-${opt:stage, self:provider.stage}
-    FEATURED_ARTISTS_TBL: ${self:service}-${opt:stage, self:provider.stage}
-    PLAY_PLATFORM_TBL: ${self:service}-${opt:stage, self:provider.stage}
+    # SONGS_TBL: ${self:service}-${opt:stage, self:provider.stage}
+    # FEATURED_ARTISTS_TBL: ${self:service}-${opt:stage, self:provider.stage}
+    # PLAY_PLATFORM_TBL: ${self:service}-${opt:stage, self:provider.stage}
 
-  resources:
-    Resources:
-      SongsTable:
-        Type: AWS::DynamoDB::Table
-        DeletionPolicy: Retain
-        Properties:
-          TableName: ${self:provider.environment.SONGS_TBL}
-          AttributeDefinitions:
-            - AttributeName: song_id
-              AttributeType: S
-            - AttributeName: title
-              AttributeType: S
-            - AttributeName: composer
-              AttributeType: S
-            - AttributeName: releaseDate
-              AttributeType: N
-            - AttributeName: category
-              AttributeType: S
-            - AttributeName: length
-              AttributeType: N
+resources:
+  Resources:
+    SongsTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.SONGS_TBL}
+        AttributeDefinitions:
+          - AttributeName: song_id
+            AttributeType: S
+          - AttributeName: title
+            AttributeType: S
+          - AttributeName: composer
+            AttributeType: S
+          - AttributeName: releaseDate
+            AttributeType: N
+          - AttributeName: category
+            AttributeType: S
+          - AttributeName: length
+            AttributeType: N
+        KeySchema:
+          - AttributeName: song_id
+            KeyType: HASH
+          - AttributeName: category
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 2
+          WriteCapacityUnits: 2
+        GlobalSecondaryIndexes:
+          -IndexName: title
           KeySchema:
-            - AttributeName: song_id
-              KeyType: HASH
-            - AttributeName: category
-              KeyType: RANGE
+            - AttributeName: title
+              Keytype: HASH
+          Projection:
+            ProjectionType: ALL
           ProvisionedThroughput:
             ReadCapacityUnits: 2
             WriteCapacityUnits: 2
-          GlobalSecondaryIndexes:
-            -IndexName: title-index
-              KeySchema:
-                - AttributeName: title
-                  Keytype: HASH
-              Projection:
-                ProjectionType: ALL
-              ProvisionedThroughput:
-                ReadCapacityUnits: 2
-                WriteCapacityUnits: 2
 
-      UsersTable:
-        Type: AWS::DynamoDB::Table
-        DeletionPolicy: Retain
-        Properties:
-          TableName: ${self:provider.environment.USERS_TBL}
-          AttributeDefinitions:
-            - AttributeName: username
-              AttributeType: S
-            - AttributeName: lastname
-              AttributeType: S
-            - AttributeName: email
-              AttributeType: S
-            - AttributeName: accessLevel
-              AttributeType: S
-          KeySchema:
-            - AttributeName: email
-              KeyType: HASH
-            - AttributeName: accessLevel
-              KeyType: RANGE
-          ProvisionedThroughput:
-            ReadCapacityUnits: 1
-            WriteCapacityUnits: 1
+    # UsersTable:
+    #   Type: AWS::DynamoDB::Table
+    #   DeletionPolicy: Retain
+    #   Properties:
+    #     TableName: ${self:provider.environment.USERS_TBL}
+    #     AttributeDefinitions:
+    #       - AttributeName: username
+    #         AttributeType: S
+    #       - AttributeName: lastname
+    #         AttributeType: S
+    #       - AttributeName: email
+    #         AttributeType: S
+    #       - AttributeName: accessLevel
+    #         AttributeType: S
+    #     KeySchema:
+    #       - AttributeName: email
+    #         KeyType: HASH
+    #       - AttributeName: accessLevel
+    #         KeyType: RANGE
+    #     ProvisionedThroughput:
+    #       ReadCapacityUnits: 1
+    #       WriteCapacityUnits: 1
 
-      FeaturedArtistsTable:
-        Type: AWS::DynamoDB::Table
-        DeletionPolicy: Retain
-        Properties:
-          TableName: ${self:provider.environment.FEATURED_ARTISTS_TBL}
-          AttributeDefinitions:
-            - AttributeName: artistName
-              AttributeType: S
-            - AttributeName: instrument
-              AttributeType: S
-            - AttributeName: website
-              AttributeType: S
-            - AttributeName: comment
-              AttributeType: S
-          KeySchema:
-            - AttributeName: artistName
-              KeyType: HASH
-            - AttributeName: instrument
-              KeyType: RANGE
-          ProvisionedThroughput:
-            ReadCapacityUnits: 1
-            WriteCapacityUnits: 1
+    # FeaturedArtistsTable:
+    #   Type: AWS::DynamoDB::Table
+    #   DeletionPolicy: Retain
+    #   Properties:
+    #     TableName: ${self:provider.environment.FEATURED_ARTISTS_TBL}
+    #     AttributeDefinitions:
+    #       - AttributeName: artistName
+    #         AttributeType: S
+    #       - AttributeName: instrument
+    #         AttributeType: S
+    #       - AttributeName: website
+    #         AttributeType: S
+    #       - AttributeName: comment
+    #         AttributeType: S
+    #     KeySchema:
+    #       - AttributeName: artistName
+    #         KeyType: HASH
+    #       - AttributeName: instrument
+    #         KeyType: RANGE
+    #     ProvisionedThroughput:
+    #       ReadCapacityUnits: 1
+    #       WriteCapacityUnits: 1
 
-      PlayPlatformTable:
-        Type: AWS::DynamoDB::Table
-        DeletionPolicy: Retain
-        Properties:
-          TableName: ${self:provider.environment.PLAY_PLATFORM_TBL}
-          AttributeDefinitions:
-            - AttributeName: active
-              AttributeType: B
-            - AttributeName: platformName
-              AttributeType: S
-          KeySchema:
-            - AttributeName: active
-              KeyType: HASH
-            - AttributeName: platformName
-              KeyType: RANGE
-          ProvisionedThroughput:
-            ReadCapacityUnits: 1
-            WriteCapacityUnits: 1
+    # PlayPlatformTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.PLAY_PLATFORM_TBL}
+        AttributeDefinitions:
+          - AttributeName: active
+            AttributeType: B
+          - AttributeName: platformName
+            AttributeType: S
+        KeySchema:
+          - AttributeName: active
+            KeyType: HASH
+          - AttributeName: platformName
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
 
 
 # you can add statements to the Lambda function's IAM Role here
