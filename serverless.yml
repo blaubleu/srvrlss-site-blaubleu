@@ -105,23 +105,23 @@ resources:
     #       WriteCapacityUnits: 1
 
     # PlayPlatformTable:
-      Type: AWS::DynamoDB::Table
-      DeletionPolicy: Retain
-      Properties:
-        TableName: ${self:provider.environment.PLAY_PLATFORM_TBL}
-        AttributeDefinitions:
-          - AttributeName: active
-            AttributeType: B
-          - AttributeName: platformName
-            AttributeType: S
-        KeySchema:
-          - AttributeName: active
-            KeyType: HASH
-          - AttributeName: platformName
-            KeyType: RANGE
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
+      # Type: AWS::DynamoDB::Table
+      # DeletionPolicy: Retain
+      # Properties:
+      #   TableName: ${self:provider.environment.PLAY_PLATFORM_TBL}
+      #   AttributeDefinitions:
+      #     - AttributeName: active
+      #       AttributeType: B
+      #     - AttributeName: platformName
+      #       AttributeType: S
+      #   KeySchema:
+      #     - AttributeName: active
+      #       KeyType: HASH
+      #     - AttributeName: platformName
+      #       KeyType: RANGE
+      #   ProvisionedThroughput:
+      #     ReadCapacityUnits: 1
+      #     WriteCapacityUnits: 1
 
 
 # you can add statements to the Lambda function's IAM Role here
