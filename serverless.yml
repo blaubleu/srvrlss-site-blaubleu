@@ -29,16 +29,8 @@ resources:
         AttributeDefinitions:
           - AttributeName: song_id
             AttributeType: S
-          - AttributeName: title
-            AttributeType: S
-          - AttributeName: composer
-            AttributeType: S
-          - AttributeName: releaseDate
-            AttributeType: N
           - AttributeName: category
             AttributeType: S
-          - AttributeName: length
-            AttributeType: N
         KeySchema:
           - AttributeName: song_id
             KeyType: HASH
