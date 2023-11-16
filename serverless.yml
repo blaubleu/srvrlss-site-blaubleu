@@ -1,0 +1,112 @@
+service: srvrlss-site-blaubleu
+# app and org for use with dashboard.serverless.com
+#app: your-app-name
+#org: your-org-name
+
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  stage: prod
+  memorySize: 128
+  timeout: 5
+  endpointType: regional
+  environment:
+    SONGS_TBL: ${self:service}-${opt:stage, self:provider.stage}
+    # USERS_TBL: ${self:service}-${opt:stage, self:provider.stage}
+    # FEATURED_ARTISTS_TBL: ${self:service}-${opt:stage, self:provider.stage}
+    # PLAY_PLATFORM_TBL: ${self:service}-${opt:stage, self:provider.stage}
+
+resources:
+  Resources:
+    SongsTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.SONGS_TBL}
+        AttributeDefinitions:
+          - AttributeName: song_id
+            AttributeType: S
+          - AttributeName: category
+            AttributeType: S
+        KeySchema:
+          - AttributeName: song_id
+            KeyType: HASH
+          - AttributeName: category
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 2
+          WriteCapacityUnits: 2
+        # GlobalSecondaryIndexes: // < debug expected an array and found an object
+        #   -IndexName: title
+        #   KeySchema:
+        #     - AttributeName: title
+        #       Keytype: HASH
+        #   Projection:
+        #     ProjectionType: ALL
+        #   ProvisionedThroughput:
+        #     ReadCapacityUnits: 2
+        #     WriteCapacityUnits: 2
+
+    # UsersTable:
+    #   Type: AWS::DynamoDB::Table
+    #   DeletionPolicy: Retain
+    #   Properties:
+    #     TableName: ${self:provider.environment.USERS_TBL}
+    #     AttributeDefinitions:
+    #       - AttributeName: email
+    #         AttributeType: S
+    #       - AttributeName: accessLevel
+    #         AttributeType: S
+    #     KeySchema:
+    #       - AttributeName: email
+    #         KeyType: HASH
+    #       - AttributeName: accessLevel
+    #         KeyType: RANGE
+    #     ProvisionedThroughput:
+    #       ReadCapacityUnits: 1
+    #       WriteCapacityUnits: 1
+
+    # FeaturedArtistsTable:
+    #   Type: AWS::DynamoDB::Table
+    #   DeletionPolicy: Retain
+    #   Properties:
+    #     TableName: ${self:provider.environment.FEATURED_ARTISTS_TBL}
+    #     AttributeDefinitions:
+    #       - AttributeName: artistName
+    #         AttributeType: S
+    #       - AttributeName: instrument
+    #         AttributeType: S
+    #     KeySchema:
+    #       - AttributeName: artistName
+    #         KeyType: HASH
+    #       - AttributeName: instrument
+    #         KeyType: RANGE
+    #     ProvisionedThroughput:
+    #       ReadCapacityUnits: 1
+    #       WriteCapacityUnits: 1
+
+    # PlayPlatformTable:
+      # Type: AWS::DynamoDB::Table
+      # DeletionPolicy: Retain
+      # Properties:
+      #   TableName: ${self:provider.environment.PLAY_PLATFORM_TBL}
+      #   AttributeDefinitions:
+      #     - AttributeName: active
+      #       AttributeType: B
+      #     - AttributeName: platformName
+      #       AttributeType: S
+      #   KeySchema:
+      #     - AttributeName: active
+      #       KeyType: HASH
+      #     - AttributeName: platformName
+      #       KeyType: RANGE
+      #   ProvisionedThroughput:
+      #     ReadCapacityUnits: 1
+      #     WriteCapacityUnits: 1
+
+functions:
+  hello:
+    handler: handler.hello
