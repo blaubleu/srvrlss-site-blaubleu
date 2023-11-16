@@ -18,6 +18,12 @@ provider:
     # USERS_TBL: ${self:service}-${opt:stage, self:provider.stage}
     # FEATURED_ARTISTS_TBL: ${self:service}-${opt:stage, self:provider.stage}
     # PLAY_PLATFORM_TBL: ${self:service}-${opt:stage, self:provider.stage}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:PutItem
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.SONGS_TBL}"
 
 resources:
   Resources:
@@ -39,16 +45,16 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 2
           WriteCapacityUnits: 2
-        # GlobalSecondaryIndexes: // < debug expected an array and found an object
-        #   -IndexName: title
-        #   KeySchema:
-        #     - AttributeName: title
-        #       Keytype: HASH
-        #   Projection:
-        #     ProjectionType: ALL
-        #   ProvisionedThroughput:
-        #     ReadCapacityUnits: 2
-        #     WriteCapacityUnits: 2
+        GlobalSecondaryIndexes: // < debug expected an array and found an object
+          -IndexName: song_id-index
+          KeySchema:
+            - AttributeName: song_id
+              Keytype: HASH
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 2
+            WriteCapacityUnits: 2
 
     # UsersTable:
     #   Type: AWS::DynamoDB::Table
