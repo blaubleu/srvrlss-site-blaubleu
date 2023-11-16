@@ -47,16 +47,16 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 2
           WriteCapacityUnits: 2
-        GlobalSecondaryIndexes:
-          -IndexName: title
-            KeySchema:
-              - AttributeName: title
-                Keytype: HASH
-            Projection:
-              ProjectionType: ALL
-            ProvisionedThroughput:
-              ReadCapacityUnits: 2
-              WriteCapacityUnits: 2
+        # GlobalSecondaryIndexes: // < debug expected an array and found an object
+        #   -IndexName: title
+        #   KeySchema:
+        #     - AttributeName: title
+        #       Keytype: HASH
+        #   Projection:
+        #     ProjectionType: ALL
+        #   ProvisionedThroughput:
+        #     ReadCapacityUnits: 2
+        #     WriteCapacityUnits: 2
 
     # UsersTable:
     #   Type: AWS::DynamoDB::Table
