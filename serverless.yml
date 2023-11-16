@@ -14,8 +14,8 @@ provider:
   timeout: 5
   endpointType: regional
   environment:
-    USERS_TBL: ${self:service}-${opt:stage, self:provider.stage}
-    # SONGS_TBL: ${self:service}-${opt:stage, self:provider.stage}
+    SONGS_TBL: ${self:service}-${opt:stage, self:provider.stage}
+    # USERS_TBL: ${self:service}-${opt:stage, self:provider.stage}
     # FEATURED_ARTISTS_TBL: ${self:service}-${opt:stage, self:provider.stage}
     # PLAY_PLATFORM_TBL: ${self:service}-${opt:stage, self:provider.stage}
 
