@@ -5,6 +5,19 @@ service: srvrlss-site-blaubleu
 
 frameworkVersion: "3"
 
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  # set tbl names:
+  songsTable: ${self:custom.stage}-songs
+  usersTable: ${self:custom.stage}-users
+  # set DynamoDB throughput for prod and np
+  tableThroughputs:
+    prod: 5
+    default: 1
+  tableThroughput: ${self:custom.tableThroughputs.${self:custom.stage}, self:custom.tableThroughputs.default}
+  # access secrets
+  environment:  prod # ${file(env.yml):${self:custom.stage}, file(env.yml):default}
+
 provider:
   name: aws
   runtime: nodejs18.x
@@ -14,16 +27,23 @@ provider:
   timeout: 5
   endpointType: regional
   environment:
-    SONGS_TBL: ${self:service}-${opt:stage, self:provider.stage}
-    # USERS_TBL: ${self:service}-${opt:stage, self:provider.stage}
+    # SONGS_TBL: songs-${self:service}-${opt:stage, self:provider.stage} # this will result on: srvrlss-site-blaubleu-prod 
+      # that is repo name + environement aka stage 
+    SONGS_TBL: ${self:custom.songsTable}
+    # USERS_TBL: users-${self:service}-${opt:stage, self:provider.stage}
+    USERS_TBL: ${self:custom.usersTable}
     # FEATURED_ARTISTS_TBL: ${self:service}-${opt:stage, self:provider.stage}
     # PLAY_PLATFORM_TBL: ${self:service}-${opt:stage, self:provider.stage}
-  iamRoleStatements:
+  iam.role.statements: # iamRoleStatements will be deprecated in v 4
     - Effect: Allow
       Action:
         - dynamodb:Query
         - dynamodb:PutItem
-      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.SONGS_TBL}"
+      Resource:
+        # "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.SONGS_TBL}"
+        - "Fn:GetAtt": [ SongsTable, Arn ]
+        - "Fn:GetAtt": [ UsersTable, Arn ]
+
 
 resources:
   Resources:
@@ -45,35 +65,35 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 2
           WriteCapacityUnits: 2
-        GlobalSecondaryIndexes: // < debug expected an array and found an object
-          -IndexName: song_id-index
-          KeySchema:
-            - AttributeName: song_id
-              Keytype: HASH
-          Projection:
-            ProjectionType: ALL
-          ProvisionedThroughput:
-            ReadCapacityUnits: 2
-            WriteCapacityUnits: 2
+        GlobalSecondaryIndexes:
+          - IndexName: song_id-index
+            KeySchema:
+              - AttributeName: song_id
+                KeyType: HASH # NOT FOUND extraneous key 
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: ${self:custom.tableThroughput}
+              WriteCapacityUnits: ${self:custom.tableThroughput}
 
-    # UsersTable:
-    #   Type: AWS::DynamoDB::Table
-    #   DeletionPolicy: Retain
-    #   Properties:
-    #     TableName: ${self:provider.environment.USERS_TBL}
-    #     AttributeDefinitions:
-    #       - AttributeName: email
-    #         AttributeType: S
-    #       - AttributeName: accessLevel
-    #         AttributeType: S
-    #     KeySchema:
-    #       - AttributeName: email
-    #         KeyType: HASH
-    #       - AttributeName: accessLevel
-    #         KeyType: RANGE
-    #     ProvisionedThroughput:
-    #       ReadCapacityUnits: 1
-    #       WriteCapacityUnits: 1
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.USERS_TBL}
+        AttributeDefinitions:
+          - AttributeName: email
+            AttributeType: S
+          - AttributeName: accessLevel
+            AttributeType: S
+        KeySchema:
+          - AttributeName: email
+            KeyType: HASH
+          - AttributeName: accessLevel
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
 
     # FeaturedArtistsTable:
     #   Type: AWS::DynamoDB::Table
