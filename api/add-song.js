@@ -5,8 +5,8 @@
 const AWS = require('aws-sdk');
 AWS.config.update({ region: 'us-west-2'});
 
-const uuidv4 = require('uuid/v4')
-const util = require('./utils.js')
+const uuidv4 = require('uuid/v4');
+const util = require('./utils.js');
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const tableName = process.env.SONGS_TBL;

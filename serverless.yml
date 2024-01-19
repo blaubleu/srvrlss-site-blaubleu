@@ -9,6 +9,7 @@ custom:
   stage: ${opt:stage, self:provider.stage}
   # set tbl names:
   songsTable: ${self:custom.stage}-songs
+  usersTable: ${self:custom.stage}-artists
   usersTable: ${self:custom.stage}-users
   # set DynamoDB throughput for prod and np
   tableThroughputs:
@@ -32,6 +33,7 @@ provider:
     SONGS_TBL: ${self:custom.songsTable}
     # USERS_TBL: users-${self:service}-${opt:stage, self:provider.stage}
     USERS_TBL: ${self:custom.usersTable}
+    ARTISTS_TBL: ${self:custom.usersTable}
     # FEATURED_ARTISTS_TBL: ${self:service}-${opt:stage, self:provider.stage}
     # PLAY_PLATFORM_TBL: ${self:service}-${opt:stage, self:provider.stage}
   iam.role.statements: # iamRoleStatements will be deprecated in v 4
@@ -82,11 +84,15 @@ resources:
       Properties:
         TableName: ${self:provider.environment.USERS_TBL}
         AttributeDefinitions:
+          - AttributeName: user_id
+            AttributeType: S
           - AttributeName: email
             AttributeType: S
           - AttributeName: accessLevel
             AttributeType: S
         KeySchema:
+          - AttributeName: user_id
+            KeyType: HASH
           - AttributeName: email
             KeyType: HASH
           - AttributeName: accessLevel
@@ -95,24 +101,32 @@ resources:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
 
-    # FeaturedArtistsTable:
-    #   Type: AWS::DynamoDB::Table
-    #   DeletionPolicy: Retain
-    #   Properties:
-    #     TableName: ${self:provider.environment.FEATURED_ARTISTS_TBL}
-    #     AttributeDefinitions:
-    #       - AttributeName: artistName
-    #         AttributeType: S
-    #       - AttributeName: instrument
-    #         AttributeType: S
-    #     KeySchema:
-    #       - AttributeName: artistName
-    #         KeyType: HASH
-    #       - AttributeName: instrument
-    #         KeyType: RANGE
-    #     ProvisionedThroughput:
-    #       ReadCapacityUnits: 1
-    #       WriteCapacityUnits: 1
+    ArtistsTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.FEATURED_ARTISTS_TBL}
+        AttributeDefinitions:
+          - AttributeName: artist_id
+            AttributeType: S
+          - AttributeName: artistName
+            AttributeType: S
+          - AttributeName: instrument
+            AttributeType: S
+          - AttributeName: featured
+            AttributeType: S
+        KeySchema:
+          - AttributeName: artist_id
+            Keytype: HASH
+          - AttributeName: artistName
+            KeyType: HASH
+          - AttributeName: instrument
+            KeyType: RANGE
+          - AttributeName: featured
+            KeyType: BOOLEAN
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
 
     # PlayPlatformTable:
       # Type: AWS::DynamoDB::Table
