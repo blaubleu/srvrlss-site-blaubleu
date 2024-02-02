@@ -9,8 +9,8 @@ custom:
   stage: ${opt:stage, self:provider.stage}
   # set tbl names:
   songsTable: ${self:custom.stage}-songs
-  usersTable: ${self:custom.stage}-artists
   usersTable: ${self:custom.stage}-users
+  artistsTable: ${self:custom.stage}-artists
   # set DynamoDB throughput for prod and np
   tableThroughputs:
     prod: 5
@@ -33,8 +33,8 @@ provider:
     SONGS_TBL: ${self:custom.songsTable}
     # USERS_TBL: users-${self:service}-${opt:stage, self:provider.stage}
     USERS_TBL: ${self:custom.usersTable}
-    ARTISTS_TBL: ${self:custom.usersTable}
-    # FEATURED_ARTISTS_TBL: ${self:service}-${opt:stage, self:provider.stage}
+    ARTISTS_TBL: ${self:custom.artistsTable}
+    # ARTISTS_TBL: ${self:service}-${opt:stage, self:provider.stage}
     # PLAY_PLATFORM_TBL: ${self:service}-${opt:stage, self:provider.stage}
   iam.role.statements: # iamRoleStatements will be deprecated in v 4
     - Effect: Allow
@@ -45,6 +45,7 @@ provider:
         # "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.SONGS_TBL}"
         - "Fn:GetAtt": [ SongsTable, Arn ]
         - "Fn:GetAtt": [ UsersTable, Arn ]
+        - "Fn:GetAtt": [ ArtistsTable, Arn ]
 
 
 resources:
@@ -71,7 +72,7 @@ resources:
           - IndexName: song_id-index
             KeySchema:
               - AttributeName: song_id
-                KeyType: HASH # NOT FOUND extraneous key 
+                KeyType: HASH
             Projection:
               ProjectionType: ALL
             ProvisionedThroughput:
@@ -94,8 +95,6 @@ resources:
           - AttributeName: user_id
             KeyType: HASH
           - AttributeName: email
-            KeyType: HASH
-          - AttributeName: accessLevel
             KeyType: RANGE
         ProvisionedThroughput:
           ReadCapacityUnits: 1
@@ -105,7 +104,7 @@ resources:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Retain
       Properties:
-        TableName: ${self:provider.environment.FEATURED_ARTISTS_TBL}
+        TableName: ${self:provider.environment.ARTISTS_TBL}
         AttributeDefinitions:
           - AttributeName: artist_id
             AttributeType: S
@@ -118,15 +117,21 @@ resources:
         KeySchema:
           - AttributeName: artist_id
             Keytype: HASH
-          - AttributeName: artistName
-            KeyType: HASH
-          - AttributeName: instrument
-            KeyType: RANGE
           - AttributeName: featured
-            KeyType: BOOLEAN
+            KeyType: RANGE
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
+        GlobalSecondaryIndexes:
+          - IndexName: artist_id-index
+          KeySchema:
+            - AttributeName: artist_id
+              KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: ${self:custom.tableThroughput}
+              WriteCapacityUnits: ${self:custom.tableThroughput}
 
     # PlayPlatformTable:
       # Type: AWS::DynamoDB::Table
