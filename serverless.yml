@@ -178,5 +178,5 @@ resources:
               WriteCapacityUnits: ${self:custom.tableThroughput}
 
 functions:
-  # hello:
+  api:
     handler: api/add-song.js
