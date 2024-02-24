@@ -11,6 +11,7 @@ custom:
   songsTable: ${self:custom.stage}-songs
   usersTable: ${self:custom.stage}-users
   artistsTable: ${self:custom.stage}-artists
+  platformTable: ${self:custom.stage}-platform
   # set DynamoDB throughput for prod and np
   tableThroughputs:
     prod: 5
@@ -23,7 +24,7 @@ provider:
   name: aws
   runtime: nodejs18.x
   region: us-east-1
-  stage: prod
+  stage: dev
   memorySize: 128
   timeout: 5
   endpointType: regional
@@ -35,7 +36,8 @@ provider:
     USERS_TBL: ${self:custom.usersTable}
     ARTISTS_TBL: ${self:custom.artistsTable}
     # ARTISTS_TBL: ${self:service}-${opt:stage, self:provider.stage}
-    # PLAY_PLATFORM_TBL: ${self:service}-${opt:stage, self:provider.stage}
+    # PLATFORM_TBL: ${self:service}-${opt:stage, self:provider.stage}
+    PLATFORM_TBL: ${self:custom.platformTable}
   iam.role.statements: # iamRoleStatements will be deprecated in v 4
     - Effect: Allow
       Action:
@@ -46,6 +48,7 @@ provider:
         - "Fn:GetAtt": [ SongsTable, Arn ]
         - "Fn:GetAtt": [ UsersTable, Arn ]
         - "Fn:GetAtt": [ ArtistsTable, Arn ]
+        - "Fn:GetAtt": [ PlatformTable, Arn ]
 
 
 resources:
@@ -58,12 +61,12 @@ resources:
         AttributeDefinitions:
           - AttributeName: song_id
             AttributeType: S
-          - AttributeName: category
+          - AttributeName: song_name
             AttributeType: S
         KeySchema:
           - AttributeName: song_id
             KeyType: HASH
-          - AttributeName: category
+          - AttributeName: song_name
             KeyType: RANGE
         ProvisionedThroughput:
           ReadCapacityUnits: 2
@@ -87,18 +90,30 @@ resources:
         AttributeDefinitions:
           - AttributeName: user_id
             AttributeType: S
-          - AttributeName: email
-            AttributeType: S
           - AttributeName: accessLevel
             AttributeType: S
+          - AttributeName: lastAccessed
+            AttributeType: N
         KeySchema:
           - AttributeName: user_id
             KeyType: HASH
-          - AttributeName: email
+          - AttributeName: lastAccessed
             KeyType: RANGE
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
+        GlobalSecondaryIndexes:
+          - IndexName: user_id-index
+            KeySchema:
+              - AttributeName: user_id
+                KeyType: HASH
+              - AttributeName: accessLevel
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: ${self:custom.tableThroughput}
+              WriteCapacityUnits: ${self:custom.tableThroughput}
 
     ArtistsTable:
       Type: AWS::DynamoDB::Table
@@ -108,50 +123,60 @@ resources:
         AttributeDefinitions:
           - AttributeName: artist_id
             AttributeType: S
-          - AttributeName: artistName
-            AttributeType: S
-          - AttributeName: instrument
+          - AttributeName: artist_name
             AttributeType: S
           - AttributeName: featured
-            AttributeType: S
+            AttributeType: B
         KeySchema:
           - AttributeName: artist_id
-            Keytype: HASH
-          - AttributeName: featured
+            KeyType: HASH
+          - AttributeName: artist_name
             KeyType: RANGE
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
         GlobalSecondaryIndexes:
           - IndexName: artist_id-index
-          KeySchema:
-            - AttributeName: artist_id
-              KeyType: HASH
+            KeySchema:
+              - AttributeName: artist_id
+                KeyType: HASH
+              - AttributeName: featured
+                KeyType: RANGE
             Projection:
               ProjectionType: ALL
             ProvisionedThroughput:
               ReadCapacityUnits: ${self:custom.tableThroughput}
               WriteCapacityUnits: ${self:custom.tableThroughput}
 
-    # PlayPlatformTable:
-      # Type: AWS::DynamoDB::Table
-      # DeletionPolicy: Retain
-      # Properties:
-      #   TableName: ${self:provider.environment.PLAY_PLATFORM_TBL}
-      #   AttributeDefinitions:
-      #     - AttributeName: active
-      #       AttributeType: B
-      #     - AttributeName: platformName
-      #       AttributeType: S
-      #   KeySchema:
-      #     - AttributeName: active
-      #       KeyType: HASH
-      #     - AttributeName: platformName
-      #       KeyType: RANGE
-      #   ProvisionedThroughput:
-      #     ReadCapacityUnits: 1
-      #     WriteCapacityUnits: 1
+    PlayPlatformTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.PLATFORM_TBL}
+        AttributeDefinitions:
+          - AttributeName: platform_id
+            AttributeType: S
+          - AttributeName: platformName
+            AttributeType: S
+        KeySchema:
+          - AttributeName: platform_id
+            KeyType: HASH
+          - AttributeName: platformName
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        GlobalSecondaryIndexes:
+          - IndexName: platform_id-index
+            KeySchema:
+              - AttributeName: platform_id
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: ${self:custom.tableThroughput}
+              WriteCapacityUnits: ${self:custom.tableThroughput}
 
 functions:
-  hello:
-    handler: handler.hello
+  # hello:
+    handler: api/add-song.js
